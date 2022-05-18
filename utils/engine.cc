@@ -2666,14 +2666,16 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
     std::vector<double> viewDir;
 
     // eye
-    std::vector<double> eyePointVec = configuration["General"]["eye"].as_double_tuple_or_die();
-    Vector3D eyePoint3D = Vector3D::vector(eyePointVec[0], eyePointVec[1], eyePointVec[2]);
-
     double theta;
     double phi;
     double r;
 
-    toPolar(eyePoint3D, theta, phi, r);
+    if (type != "2DLSystem") {
+        std::vector<double> eyePointVec = configuration["General"]["eye"].as_double_tuple_or_die();
+        Vector3D eyePoint3D = Vector3D::vector(eyePointVec[0], eyePointVec[1], eyePointVec[2]);
+
+        toPolar(eyePoint3D, theta, phi, r);
+    }
 
     if (viewEnable){
         hfov = configuration["General"]["hfov"].as_int_or_die();
