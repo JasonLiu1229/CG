@@ -56,7 +56,10 @@ std::vector<double> matrixMult(std::vector<double> mat1, Matrix mat2){
 }
 
 Vector3D vecTo3D(std::vector<double> vect){
-    Vector3D newVec = Vector3D::vector(vect[0], vect[1], vect[2]);
+    Vector3D newVec;
+    newVec.x = vect[0];
+    newVec.y = vect[1];
+    newVec.z = vect[2];
     return newVec;
 }
 
@@ -1417,13 +1420,13 @@ std::pair<std::vector<Vector3D>, std::vector<Face>> draw3DLsystem(const LParser:
 
 double inverseZ(const double i, const double a, const double z1, const double z2, const double min, const double max){
     double invZ = 0;
-    invZ = (i/a)/z2 + (1 - (i/a))/z1;
+    invZ = (i/a)/z1 + (1 - (i/a))/z2;
     return invZ;
 }
 
 void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, unsigned int y0, double z0, unsigned int x1, unsigned int y1, double z1, img::Color color){
-    assert(x0 < image.get_width() && y0 < image.get_height());
-    assert(x1 < image.get_width() && y1 < image.get_height());
+    assert(x0 <= image.get_width() && y0 <= image.get_height());
+    assert(x1 <= image.get_width() && y1 <= image.get_height());
 
     double zInv;
 
@@ -1432,6 +1435,9 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
         //special case for x0 == x1
         for (unsigned int i = std::min(y0, y1); i <= std::max(y0, y1); i++)
         {
+            if (y1 > y0){
+                std::swap(z1, z0);
+            }
             zInv = inverseZ(i, std::max(y0, y1) - std::min(y0, y1), z0, z1, std::min(y0, y1), std::max(y0, y1));
             if (zInv < zbuffer[x0][i]){
                 zbuffer[x0][i] = zInv;
@@ -1444,6 +1450,9 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
         //special case for y0 == y1
         for (unsigned int i = std::min(x0, x1); i <= std::max(x0, x1); i++)
         {
+            if (x1 > x0){
+                std::swap(z0, z1);
+            }
             zInv = inverseZ(i, std::max(x0, x1) - std::min(x0, x1), z0, z1, std::min(x0, x1), std::max(x0, x1));
             if (zInv < zbuffer[i][y0]){
                 zbuffer[i][y0] = zInv;
@@ -1465,7 +1474,7 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
         {
             for (unsigned int i = 0; i <= (x1 - x0); i++)
             {
-                zInv = inverseZ(i, x1 - x0, z0, z1, std::min(x0, x1), std::max(x0, x1));
+                zInv = inverseZ(i, x1 - x0, z1, z0, std::min(x0, x1), std::max(x0, x1));
                 if (zInv < zbuffer[x0+i][(unsigned int) round(y0 + m * i)]){
                     zbuffer[x0+i][(unsigned int) round(y0 + m * i)] = zInv;
                     image(x0 + i, (unsigned int) round(y0 + m * i)) = color;
@@ -1477,7 +1486,7 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
         {
             for (unsigned int i = 0; i <= (y1 - y0); i++)
             {
-                zInv = inverseZ(i, y1 - y0, z0, z1, std::min(y0, y1), std::max(y0, y1));
+                zInv = inverseZ(i, y1 - y0, z1, z0, 0, (y1 - y0));
                 if (zInv < zbuffer[(unsigned int) round(x0 + (i / m))][y0 + i]){
                     zbuffer[(unsigned int) round(x0 + (i / m))][y0 + i] = zInv;
                     image((unsigned int) round(x0 + (i / m)), y0 + i) = color;
@@ -1489,12 +1498,11 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
         {
             for (unsigned int i = 0; i <= (y0 - y1); i++)
             {
-                zInv = inverseZ(i, y0 - y1, z0, z1, std::min(y0, y1), std::max(y0, y1));
+                zInv = inverseZ(i, y0 - y1, z1, z0, 0, (y0 - y1));
                 if(zInv < zbuffer[(unsigned int) round(x0 - (i / m))][y0-i]){
                     zbuffer[(unsigned int) round(x0 - (i / m))][y0-i] = zInv;
                     image((unsigned int) round(x0 - (i / m)), y0 - i) = color;
                 }
-
             }
         }
     }
@@ -2653,7 +2661,7 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
 
     // eye
     std::vector<double> eyePointVec = configuration["General"]["eye"].as_double_tuple_or_die();
-    Vector3D eyePoint3D = vecTo3D(eyePointVec);
+    Vector3D eyePoint3D = Vector3D::vector(eyePointVec[0], eyePointVec[1], eyePointVec[2]);
 
     double theta;
     double phi;
@@ -2672,7 +2680,7 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
         double phi2;
         double r2;
 
-        Vector3D viewDir3D = vecTo3D(viewDir);
+        Vector3D viewDir3D = Vector3D::vector(viewDir[0], viewDir[1], viewDir[2]);
         toPolar(-viewDir3D, theta2, phi2, r2);
         theta = theta2;
         phi = phi2;
