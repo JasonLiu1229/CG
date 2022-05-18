@@ -1429,35 +1429,39 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
     assert(x1 <= image.get_width() && y1 <= image.get_height());
 
     double zInv;
-
+    int j = 0;
     if (x0 == x1)
     {
         //special case for x0 == x1
+        j = std::max(y0, y1) - std::min(y0, y1);
         for (unsigned int i = std::min(y0, y1); i <= std::max(y0, y1); i++)
         {
             if (y1 > y0){
                 std::swap(z1, z0);
             }
-            zInv = inverseZ(i, std::max(y0, y1) - std::min(y0, y1), z0, z1, std::min(y0, y1), std::max(y0, y1));
+            zInv = inverseZ(j, std::max(y0, y1) - std::min(y0, y1), z0, z1, std::min(y0, y1), std::max(y0, y1));
             if (zInv < zbuffer[x0][i]){
                 zbuffer[x0][i] = zInv;
                 image(x0, i) = color;
             }
+            j--;
         }
     }
     else if (y0 == y1)
     {
         //special case for y0 == y1
+        j = std::max(x0, x1) - std::min(x0, x1);
         for (unsigned int i = std::min(x0, x1); i <= std::max(x0, x1); i++)
         {
             if (x1 > x0){
                 std::swap(z0, z1);
             }
-            zInv = inverseZ(i, std::max(x0, x1) - std::min(x0, x1), z0, z1, std::min(x0, x1), std::max(x0, x1));
+            zInv = inverseZ(j, std::max(x0, x1) - std::min(x0, x1), z0, z1, std::min(x0, x1), std::max(x0, x1));
             if (zInv < zbuffer[i][y0]){
                 zbuffer[i][y0] = zInv;
                 image(i, y0) = color;
             }
+            j--;
         }
     }
     else
@@ -1472,37 +1476,41 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
         double m = ((double) y1 - (double) y0) / ((double) x1 - (double) x0);
         if (-1.0 <= m && m <= 1.0)
         {
+            j = x1 - x0;
             for (unsigned int i = 0; i <= (x1 - x0); i++)
             {
-                zInv = inverseZ(i, x1 - x0, z1, z0, std::min(x0, x1), std::max(x0, x1));
+                zInv = inverseZ(j, x1 - x0, z1, z0,0, x1 - x0);
                 if (zInv < zbuffer[x0+i][(unsigned int) round(y0 + m * i)]){
                     zbuffer[x0+i][(unsigned int) round(y0 + m * i)] = zInv;
                     image(x0 + i, (unsigned int) round(y0 + m * i)) = color;
                 }
-
+                j--;
             }
         }
         else if (m > 1.0)
         {
+            j = y1 - y0;
             for (unsigned int i = 0; i <= (y1 - y0); i++)
             {
-                zInv = inverseZ(i, y1 - y0, z1, z0, 0, (y1 - y0));
+                zInv = inverseZ(j, y1 - y0, z1, z0, 0, (y1 - y0));
                 if (zInv < zbuffer[(unsigned int) round(x0 + (i / m))][y0 + i]){
                     zbuffer[(unsigned int) round(x0 + (i / m))][y0 + i] = zInv;
                     image((unsigned int) round(x0 + (i / m)), y0 + i) = color;
                 }
-
+                j--;
             }
         }
         else if (m < -1.0)
         {
+            j = y0 - y1;
             for (unsigned int i = 0; i <= (y0 - y1); i++)
             {
-                zInv = inverseZ(i, y0 - y1, z1, z0, 0, (y0 - y1));
+                zInv = inverseZ(j, y0 - y1, z1, z0, 0, (y0 - y1));
                 if(zInv < zbuffer[(unsigned int) round(x0 - (i / m))][y0-i]){
                     zbuffer[(unsigned int) round(x0 - (i / m))][y0-i] = zInv;
                     image((unsigned int) round(x0 - (i / m)), y0 - i) = color;
                 }
+                j--;
             }
         }
     }
