@@ -1587,9 +1587,7 @@ void draw_zbuf_triag(ZBuffer &zbuffer, img::EasyImage &image, Vector3D const &A,
     Color color1;
     Color color2;
     if (lights.empty()){
-        color.red = ambientReflection.getRed() * 255;
-        color.green = ambientReflection.getGreen() * 255;
-        color.blue = ambientReflection.getBlue() * 255;
+        color2 = ambientReflection;
     }
     else {
         for (auto light : lights) {
