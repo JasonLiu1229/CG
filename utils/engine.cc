@@ -660,7 +660,7 @@ Figure createSphere(const int n){
     return icosahedron;
 }
 
-Figure createCone(const int n, const int h){
+Figure createCone(const int n, const double h){
     Face face;
     face.point_indexes.resize(n, 0);
     Face face2;
