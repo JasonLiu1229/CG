@@ -1479,7 +1479,7 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
             j = x1 - x0;
             for (unsigned int i = 0; i <= (x1 - x0); i++)
             {
-                zInv = inverseZ(j, x1 - x0, z1, z0,0, x1 - x0);
+                zInv = inverseZ(j, x1 - x0, z0, z1,0, x1 - x0);
                 if (zInv < zbuffer[x0+i][(unsigned int) round(y0 + m * i)]){
                     zbuffer[x0+i][(unsigned int) round(y0 + m * i)] = zInv;
                     image(x0 + i, (unsigned int) round(y0 + m * i)) = color;
@@ -1492,7 +1492,7 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
             j = y1 - y0;
             for (unsigned int i = 0; i <= (y1 - y0); i++)
             {
-                zInv = inverseZ(j, y1 - y0, z1, z0, 0, (y1 - y0));
+                zInv = inverseZ(j, y1 - y0, z0, z1, 0, (y1 - y0));
                 if (zInv < zbuffer[(unsigned int) round(x0 + (i / m))][y0 + i]){
                     zbuffer[(unsigned int) round(x0 + (i / m))][y0 + i] = zInv;
                     image((unsigned int) round(x0 + (i / m)), y0 + i) = color;
@@ -1505,7 +1505,7 @@ void draw_zbuf_line(ZBuffer &zbuffer, img::EasyImage &image, unsigned int x0, un
             j = y0 - y1;
             for (unsigned int i = 0; i <= (y0 - y1); i++)
             {
-                zInv = inverseZ(j, y0 - y1, z1, z0, 0, (y0 - y1));
+                zInv = inverseZ(j, y0 - y1, z0, z1, 0, (y0 - y1));
                 if(zInv < zbuffer[(unsigned int) round(x0 - (i / m))][y0-i]){
                     zbuffer[(unsigned int) round(x0 - (i / m))][y0-i] = zInv;
                     image((unsigned int) round(x0 - (i / m)), y0 - i) = color;
