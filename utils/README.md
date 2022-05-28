@@ -24,7 +24,7 @@ X: Niet werkend of niet geïmplementeerd
 |   | Z-buffering (driehoeken)  | v |
 | 6 | 3D fractalen              | v |
 |   | BuckyBall                 | v |
-|   | Mengerspons               | x |
+|   | Mengerspons               | v |
 |   | View Frustum              | x |
 | 7 | Ambient licht             | v |
 |   | Diffuus licht (oneindig)  | v |

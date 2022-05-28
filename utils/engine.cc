@@ -986,6 +986,50 @@ Figure createBuckyBall(){
     return buckyBall;
 }
 
+Figures3D createMengerspons(int nr_iterations , Figure &cube){
+    Matrix scale = scaleFigure(1.0/3.0);
+
+    for (auto face : cube.faces) {
+        Vector3D A = cube.points[face.point_indexes[0]];
+        Vector3D B = cube.points[face.point_indexes[1]];
+        Vector3D C = cube.points[face.point_indexes[2]];
+        Vector3D D = cube.points[face.point_indexes[3]];
+
+        Vector3D E = (A/2.0) + (B/2.0);
+        Vector3D F = (B/2.0) + (C/2.0);
+        Vector3D G = (C/2.0) + (D/2.0);
+        Vector3D H = (D/2.0) + (A/2.0);
+
+        cube.points.push_back(E);
+        cube.points.push_back(F);
+        cube.points.push_back(G);
+        cube.points.push_back(H);
+    }
+
+    Figures3D mengerspons = {cube};
+
+    Figures3D result = {cube};
+    for(int i = 0; i < nr_iterations; ++i){
+        Figures3D temp;
+        for (auto &fig : mengerspons) {
+            for (int j = 0; j < fig.points.size(); ++j) {
+                Figure tempfig = fig;
+
+                applyTransformationFig(tempfig, scale);
+
+                Matrix translation = translate(fig.points[j] - tempfig.points[j]);
+
+                applyTransformationFig(tempfig, translation);
+
+                temp.push_back(tempfig);
+            }
+        }
+        mengerspons = temp;
+    }
+
+    return mengerspons;
+}
+
 //==== Generating Image Functions ====//
 img::EasyImage draw2DLines(const Lines2D &lines, const int size, const std::vector<double>& bgClr){
     // Determine min and max of x and y
@@ -2626,6 +2670,43 @@ Figures3D parseFigures(const ini::Configuration &configuration, const Matrix &ey
             applyTransformationFig(figureO, m);
             figures3D.push_back(figureO);
         }
+        else if (type2 == "MengerSponge"){
+            figureO = createCube();
+            figureO.name = type2;
+            if (type == "LightedZBuffering"){
+                std::vector<double> ambientV = configuration[tempString1]["ambientReflection"].as_double_tuple_or_die();
+                figureO.ambientReflection.setRGB(ambientV[0], ambientV[1], ambientV[2]);
+            }
+            else {
+                Color color;
+                std::vector<double> colVec = configuration[tempString1]["color"].as_double_tuple_or_die();
+                color.setRGB(colVec[0], colVec[1],
+                             colVec[2]);
+
+                figureO.ambientReflection = color;
+            }
+            std::vector<double> diffuseV = configuration[tempString1]["diffuseReflection"].as_double_tuple_or_default({0,0,0});
+            std::vector<double> specularV = configuration[tempString1]["specularReflection"].as_double_tuple_or_default({0,0,0});
+            figureO.diffuseReflection.setRGB(diffuseV[0],diffuseV[1],diffuseV[2]);
+            figureO.specularReflection.setRGB(specularV[0],specularV[1],specularV[2]);
+            figureO.reflectionCoefficient = configuration[tempString1]["reflectionCoefficient"].as_double_or_default(0);
+
+            figureO.rotationX = configuration[tempString1]["rotateX"].as_double_or_die();
+            figureO.rotationY = configuration[tempString1]["rotateY"].as_double_or_die();
+            figureO.rotationZ = configuration[tempString1]["rotateZ"].as_double_or_die();
+
+            figureO.scale = configuration[tempString1]["scale"].as_double_or_die();
+
+            figureO.center = configuration[tempString1]["center"].as_double_tuple_or_die();
+
+            Matrix m = scaleFigure(figureO.scale);
+
+            applyMatrix(m, figureO, eyePointMat);
+            applyTransformationFig(figureO, m);
+
+            Figures3D mengerspons = createMengerspons(configuration[tempString1]["nrIterations"].as_int_or_die(), figureO);
+            figures3D.insert(figures3D.end(), mengerspons.begin(), mengerspons.end());
+        }
     }
 
     return figures3D;
@@ -2676,7 +2757,6 @@ img::EasyImage generate_image(const ini::Configuration &configuration)
 
         toPolar(eyePoint3D, theta, phi, r);
     }
-
     if (viewEnable){
         hfov = configuration["General"]["hfov"].as_int_or_die();
         aspectRatio = configuration["General"]["aspectRatio"].as_double_or_die();
