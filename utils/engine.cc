@@ -1008,7 +1008,6 @@ Figures3D createMengerspons(int nr_iterations , Figure &cube){
 
     Figures3D mengerspons = {cube};
 
-    Figures3D result = {cube};
     for(int i = 0; i < nr_iterations; ++i){
         Figures3D temp;
         for (auto &fig : mengerspons) {
